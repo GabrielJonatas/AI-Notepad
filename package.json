@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "description": "\"MindPad is a simple note-taking app with optional AI guidance, built with Node.js, Express, and React.\"",
   "main": "dist/server.js",
-  "scripts": {
-    "start": "node dist/server.js",
-    "build": "npx tsc",
-    "dev": "tsx src/server.ts"
-  },
   "type": "module",
+  "scripts": {
+    "start": "node --env-file=.env dist/server.js",
+    "build": "esbuild src/server.ts --bundle --minify --platform=node --format=esm --outfile=dist/server.js --external:express",
+    "dev": "tsx --env-file=.env src/server.ts"
+  },
   "author": "Gabriel J",
   "license": "ISC",
   "dependencies": {
@@ -16,7 +16,8 @@
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
-    "dotenv": "^17.2.1",
+    "@types/node": "^24.3.0",
+    "esbuild": "^0.25.9",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2"
   }
