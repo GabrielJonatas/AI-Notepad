@@ -1,63 +1,65 @@
-import type { Prisma, PrismaClient } from '../../generated/prisma';
+import type { Prisma } from '../../generated/prisma';
 import prisma from './prisma';
+import type { Schema } from '../types/schema'
 
-export class DatabaseService {
-    constructor(private readonly prisma: PrismaClient) {}
+export default class DatabaseService {
+    constructor(private readonly schema: Schema) {}
 
-    async getAllNotes() {
+    async getAll() {
         try {
-            const notes = await this.prisma.note.findMany();
-            return notes;
+            const delegate = prisma[this.schema] as any;
+            const elements = await delegate.findMany();
+            return elements;
         } catch (error) {
-            console.error('Error fetching all notes:', error);
+            console.error('Error fetching all elements:', error);
             throw error;
         }
     }
 
-    async getUniqueNote(object: Prisma.NoteWhereUniqueInput) {
+    async getUnique(uniqueElement: Prisma.Args<typeof prisma[Schema], 'findUnique'>['where']) {
         try {
-            const note = await this.prisma.note.findUnique({
-                where: object,
-            });
-            return note;
+            const delegate = prisma[this.schema] as any;
+            const element = await delegate.findUnique({ where: uniqueElement});
+            return element;
         } catch (error) {
-            console.error('Error fetching unique note:', error);
+            console.error('Error fetching unique element:', error);
             throw error;
         }
     }
 
-    async createNote(object: Prisma.NoteCreateInput) {
+    async create(elementData: Prisma.Args<typeof prisma[Schema], 'create'>['data']) {
         try {
-            const note = await this.prisma.note.create({ data: object });
-            return note;
+            const delegate = prisma[this.schema] as any;
+            const element = await delegate.create({ data: elementData });
+            return element;
         } catch (error) {
-            console.error('Error creating note:', error);
+            console.error('Error creating element:', error);
             throw error;
         }
     }
 
-    async updateNote(
-        filter: Prisma.NoteWhereUniqueInput,
-        object: Prisma.NoteUpdateInput,
+    async update(
+        uniqueElement: Prisma.Args<typeof prisma[Schema], 'findUnique'>['where'],
+        elementToUpdate: Prisma.Args<typeof prisma[Schema], 'update'>['data'],
     ) {
         try {
-            const note = await this.prisma.note.update({ where: filter, data: object });
-            return note;
+            const delegate = prisma[this.schema] as any;
+            const element = await delegate.update({ where: uniqueElement, data: elementToUpdate });
+            return element;
         } catch (error) {
-            console.error('Error updating note:', error);
+            console.error('Error updating element:', error);
             throw error;
         }
     }
 
-    async deleteNote(object: Prisma.NoteWhereUniqueInput) {
+    async delete(uniqueElement: Prisma.Args<typeof prisma[Schema], 'findUnique'>['where']) {
         try {
-            const note = await this.prisma.note.delete({ where: object });
-            return note;
+            const delegate = prisma[this.schema] as any;
+            const element = await delegate.delete({ where: uniqueElement });
+            return element;
         } catch (error) {
-            console.error('Error deleting note:', error);
+            console.error('Error deleting element:', error);
             throw error;
         }
     }
 }
-
-export default new DatabaseService(prisma);
