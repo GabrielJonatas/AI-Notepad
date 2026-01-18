@@ -1,15 +1,5 @@
-import DatabaseService from '../database/service'
-
-interface NoteData {
-    user: {
-        create: {
-            email: string;
-            password: string;
-        };
-    };
-    title: string;
-    content: string;
-}
+import DatabaseService from '../database/service';
+import type { NoteData } from '../types/noteData';
 
 export default class NoteService {
     constructor(private readonly databaseService: DatabaseService) {}

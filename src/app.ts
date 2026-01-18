@@ -1,12 +1,13 @@
 import express from 'express';
 import { notesRouter } from './router/notesRoutes';
 import { userRouter } from './router/userRoutes';
+import { authGuard } from './middleware/authGuard';
 
 const app = express();
 
 app.use(express.json());
 
-app.use('/notes', notesRouter);
+app.use('/notes', authGuard, notesRouter);
 
 app.use('/user', userRouter);
 

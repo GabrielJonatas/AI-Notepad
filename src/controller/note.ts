@@ -1,5 +1,6 @@
 import DatabaseService from '../database/service';
 import NoteService from '../service/note';
+import type { NoteData } from '../types/noteData';
 import { ValidateNoteSchema } from '../zod/noteSchema';
 import type { Request, Response } from 'express';
 
@@ -46,13 +47,9 @@ export const createEntry = async (req: Request, res: Response) => {
         })
     }
 
-    const noteData = {
+    const noteData: NoteData = {
         ...noteValidated.data,
-        user: {
-            create: {
-                ...userZero
-            }
-        }
+        userId: res.locals.user.userId
     }
 
     try {

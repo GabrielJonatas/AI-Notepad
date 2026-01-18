@@ -31,6 +31,30 @@ export const signupUser = async (req: Request, res: Response) => {
 }
 
 
-// export const loginUser = async (req: Request, res: Response) {
-    
-// }
+export const loginUser = async (req: Request, res: Response) => {
+    const user = ValidateUserSchema.safeParse(req.body);
+
+    if(!user.success) {
+        return res.status(400).json({
+            error: user.error.issues[0]?.message ?? 'Unknown error'
+        })
+    }
+
+    const existingUser = await userService.getUserByEmail(user.data.email);
+
+    if(!existingUser) {
+        return res.status(404).json({ error: 'User with this email doesnt exist.' });
+    }
+
+    try {
+        const passwordMatch = await userService.comparePassword(user.data.password, existingUser.password);
+        if (!passwordMatch) {
+            return res.status(401).json({ error: 'Invalid password.' });
+        }
+        const payload = { userId: existingUser.id, email: existingUser.email };
+        const generatedToken = await userService.createJwtToken(payload);
+        return res.status(200).json({ token: generatedToken });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to authenticate user.' });
+    }
+}
