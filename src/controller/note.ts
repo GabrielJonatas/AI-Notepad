@@ -6,14 +6,10 @@ import type { Request, Response } from 'express';
 
 const noteService = new NoteService(new DatabaseService('note'));
 
-const userZero = {
-    email: 'ADMIN',
-    password: 'ADMIN123'
-}
-
 export const getAllEntries = async (req: Request, res: Response) => {
     try {
-        const notes = await noteService.getAllNotes();
+        const userId = res.locals.user.userId;
+        const notes = await noteService.getAllNotes(userId);
         return res.status(200).send(notes);
     } catch (error) {
         return res.status(500).json({ error: 'Failed to retrieve notes.' });
@@ -21,16 +17,18 @@ export const getAllEntries = async (req: Request, res: Response) => {
 }
 
 export const getEntryById = async (req: Request, res: Response) => {
-    const id = parseInt(req.params.id ?? '-1', 10);
+    const id = req.params.id?.trim() ?? '';
 
-    if (id < 0 || isNaN(id)) {
+    if (!id) {
         return res.status(400).json({
             error: "An Invalid ID was sent"
         });
     }
-
+    
+    const userId = res.locals.user.userId;
+    
     try {
-        const note = await noteService.getNoteById(id);
+        const note = await noteService.getNoteById(id, userId);
         if (!note) return res.status(404).json({ error: 'Note not found' });
         return res.status(200).send(note);
     } catch (error) {
@@ -48,8 +46,9 @@ export const createEntry = async (req: Request, res: Response) => {
     }
 
     const noteData: NoteData = {
-        ...noteValidated.data,
-        userId: res.locals.user.userId
+        title: noteValidated.data.title,
+        content: noteValidated.data.content ?? '',
+        userId: res.locals.user.userId,
     }
 
     try {
@@ -61,16 +60,17 @@ export const createEntry = async (req: Request, res: Response) => {
 }
 
 export async function updateEntry(req: Request, res: Response) {
-    const id = parseInt(req.params.id ?? '-1', 10);
+    const id = req.params.id?.trim() ?? '';
 
-    if (id < 0 || isNaN(id)) {
+    if (!id) {
         return res.status(400).json({
             error: "An Invalid ID was sent"
         });
     }
 
     try {
-        const note = await noteService.getNoteById(id);
+        const userId = res.locals.user.userId;
+        const note = await noteService.getNoteById(id, userId);
         if (!note) return res.status(404).json({ error: 'Note not found' });
 
         const noteValidated = ValidateNoteSchema.safeParse(req.body);
@@ -81,13 +81,10 @@ export async function updateEntry(req: Request, res: Response) {
             })
         }
 
-        const noteData = {
-            ...noteValidated.data,
-            user: {
-                create: {
-                    ...userZero
-                }
-            }
+        const noteData: NoteData = {
+            title: noteValidated.data.title,
+            content: noteValidated.data.content ?? note.content,
+            userId: res.locals.user.userId,
         }
 
         const updatedNote = await noteService.updateNote(id, noteData);
@@ -98,16 +95,17 @@ export async function updateEntry(req: Request, res: Response) {
 }
 
 export async function deleteEntry(req: Request, res: Response) {
-    const id = parseInt(req.params.id ?? '-1', 10);
+    const id = req.params.id?.trim() ?? '';
 
-    if (id < 0 || isNaN(id)) {
+    if (!id) {
         return res.status(400).json({
             error: "An Invalid ID was sent"
         });
     }
 
     try {
-        const note = await noteService.getNoteById(id);
+        const userId = res.locals.user.userId;
+        const note = await noteService.getNoteById(id, userId);
         if (!note) return res.status(404).json({ error: 'Note not found' });
 
         const deletedNote = await noteService.deleteNote(id);

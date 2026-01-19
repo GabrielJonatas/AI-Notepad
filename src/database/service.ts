@@ -5,10 +5,13 @@ import type { Schema } from '../types/schema'
 export default class DatabaseService {
     constructor(private readonly schema: Schema) {}
 
-    async getAll() {
+    async getAll(userId: string) {
         try {
             const delegate = prisma[this.schema] as any;
-            const elements = await delegate.findMany();
+            const elements = await delegate.findMany({
+                where: { userId },
+                orderBy: { createdAt: 'desc' }
+            });
             return elements;
         } catch (error) {
             console.error('Error fetching all elements:', error);
