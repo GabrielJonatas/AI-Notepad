@@ -1,1 +1,1 @@
-export type Schema = 'user' | 'note';
+export type Schema = 'user' | 'note' | 'ai';

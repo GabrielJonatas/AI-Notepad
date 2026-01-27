@@ -1,0 +1,9 @@
+model Ai {
+    id String @id @default(uuid())
+    summary String
+    keyPoints String
+    note Note @relation(fields: [noteId], references: [id])
+    noteId String @unique
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
